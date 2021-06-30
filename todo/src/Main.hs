@@ -5,7 +5,6 @@ import qualified Text.Trifecta as T
 import Graphics.Vty
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class (lift)
-import Control.Monad (forever)
 
 type AppState = (Item, [Item])
 
@@ -17,10 +16,11 @@ renderState (selected, items)
   = (foldr (<->) emptyImage . map (string currentAttr . showItem)) items
 
 
--- testAppState :: AppState
--- testAppState = ((Done, "Questo e' finito"),
---                [(Todo, "Questo no"),(Done, "Questo e' finito"), (Done, "Questo e' finito")])
-
+-- Main version without monad transformers.
+-- In this case you can see that IO and Maybe are not composed, so we need to
+-- get out the value wrapped indise the Maybe monad to continue the computation
+-- within IO. MaybeT transformer just combine those two monads.
+--
 -- main :: IO ()
 -- main = do
 --     config <- standardIOConfig
@@ -37,7 +37,7 @@ main :: IO ()
 main = do
     config <- standardIOConfig
     vty <- mkVty config
-    result <- runMaybeT $ do
+    runMaybeT $ do
         result <- MaybeT $ T.parseFromFile parseContent "DB.todo"
         let pic = picForImage $ renderState (head result, result)
         lift $ mainLoop vty pic
