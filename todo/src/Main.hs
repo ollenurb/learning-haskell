@@ -4,6 +4,7 @@ import Parser (Status, Item, parseContent)
 import qualified Text.Trifecta as T
 import Graphics.Vty
 import Control.Monad.Trans.Maybe
+import Control.Monad.Trans.Class (lift)
 import Control.Monad (forever)
 
 type AppState = (Item, [Item])
@@ -20,16 +21,27 @@ renderState (selected, items)
 -- testAppState = ((Done, "Questo e' finito"),
 --                [(Todo, "Questo no"),(Done, "Questo e' finito"), (Done, "Questo e' finito")])
 
+-- main :: IO ()
+-- main = do
+--     config <- standardIOConfig
+--     vty <- mkVty config
+--     result <- T.parseFromFile parseContent "DB.todo"
+--     case result of
+--       Nothing -> return ()
+--       Just a -> do
+--           let pic = picForImage $ renderState (head a, a)
+--           mainLoop vty pic
+
+
 main :: IO ()
 main = do
     config <- standardIOConfig
     vty <- mkVty config
-    result <- T.parseFromFile parseContent "DB.todo"
-    case result of
-      Nothing -> return ()
-      Just a -> do
-          let pic = picForImage $ renderState (head a, a)
-          mainLoop vty pic
+    result <- runMaybeT $ do
+        result <- MaybeT $ T.parseFromFile parseContent "DB.todo"
+        let pic = picForImage $ renderState (head result, result)
+        lift $ mainLoop vty pic
+    return ()
 
 
 mainLoop :: Vty -> Picture -> IO ()
