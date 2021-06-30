@@ -6,7 +6,11 @@ import Data.Char
 import Text.Parser.Token
 
 data Status = Done | Todo
-    deriving (Show)
+    deriving (Eq)
+
+instance Show Status where
+    show Done = "[X]"
+    show _    = "[ ]"
 
 type Item = (Status, String)
 
