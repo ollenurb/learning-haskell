@@ -8,15 +8,15 @@ import Text.Parser.Token
 data Status = Done | Todo
     deriving (Eq)
 
-instance Show Status where
-    show Done = "[X]"
-    show _    = "[ ]"
-
 data Item = Item Status String
     deriving (Eq)
 
+instance Show Status where
+    show Done = "DONE"
+    show Todo = "TODO"
+
 instance Show Item where
-    show (Item status body) = show status ++ " " ++ show body
+    show (Item status body) = show status ++ ": " ++ body
 
 switchState :: Item -> Item
 switchState (Item Done body) = Item Todo body

@@ -2,12 +2,7 @@
 
 module Main where
 
--- TODO - List
--- [X] Implement navigation through items
--- [X] Implement todo/done state change
--- [ ] Implement apply change (save to file)
-
-import Parser (Status, Item, parseContent, switchState)
+import Parser
 import qualified Text.Trifecta as T
 import Graphics.Vty
 import Control.Monad.Trans.Maybe
@@ -15,17 +10,29 @@ import Control.Monad.Trans.Class (lift)
 
 type AppState = ListZipper Item
 
+-- Wrap in a NewType to get a different Show instance
+newtype RenderizableItem = RI Item
+
+instance Show RenderizableItem where
+    show (RI (Item Done body)) = "[X] " ++ body
+    show (RI (Item Todo body)) = "[ ] " ++ body
+
 -- TODO: Clean this up
 renderState :: AppState -> Image
 renderState (selected:below, above)
   = foldr (<->) emptyImage $ ((reverse . toImages) above) ++ (selectedImage:(toImages below))
       where
-          toImages = map (string defAttr . show)
-          selectedImage = string selectedAttr (show selected)
+          toImages = map (string defAttr . show . RI)
+          selectedImage = string selectedAttr (show $ RI selected)
           selectedAttr = (defAttr `withBackColor` white `withForeColor` black)
 
 changeSelectedState :: AppState -> AppState
 changeSelectedState (selected:below, above) = ((switchState selected):below, above)
+
+saveChanges :: AppState -> String -> IO ()
+saveChanges state path = do
+    let items = uncurry (++) $ state
+    writeFile path $ unlines . map show $ items
 
 -- Main version without monad transformers.
 -- In this case you can see that IO and Maybe are not composed, so we need to
@@ -58,7 +65,7 @@ mainLoop vty state = do
     update vty renderedState
     e <- nextEvent vty
     case checkEvent e of
-      Close -> shutdown vty
+      Close -> saveChanges state "DB.todo" >> shutdown vty
       Up    -> mainLoop vty $ backward state
       Down  -> mainLoop vty $ forward state
       Set   -> mainLoop vty $ changeSelectedState state
