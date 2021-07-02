@@ -1,20 +1,31 @@
+{-# LANGUAGE TypeSynonymInstances #-}
+
 module Main where
 
-import Parser (Status, Item, parseContent)
+-- TODO - List
+-- [X] Implement navigation through items
+-- [X] Implement todo/done state change
+-- [ ] Implement apply change (save to file)
+
+import Parser (Status, Item, parseContent, switchState)
 import qualified Text.Trifecta as T
 import Graphics.Vty
 import Control.Monad.Trans.Maybe
 import Control.Monad.Trans.Class (lift)
 
-type AppState = (Item, [Item])
+type AppState = ListZipper Item
 
-showItem :: Item -> String
-showItem (state, body) = show state ++ " " ++ body
-
+-- TODO: Clean this up
 renderState :: AppState -> Image
-renderState (selected, items)
-  = (foldr (<->) emptyImage . map (string currentAttr . showItem)) items
+renderState (selected:below, above)
+  = foldr (<->) emptyImage $ ((reverse . toImages) above) ++ (selectedImage:(toImages below))
+      where
+          toImages = map (string defAttr . show)
+          selectedImage = string selectedAttr (show selected)
+          selectedAttr = (defAttr `withBackColor` white `withForeColor` black)
 
+changeSelectedState :: AppState -> AppState
+changeSelectedState (selected:below, above) = ((switchState selected):below, above)
 
 -- Main version without monad transformers.
 -- In this case you can see that IO and Maybe are not composed, so we need to
@@ -32,25 +43,28 @@ renderState (selected, items)
 --           let pic = picForImage $ renderState (head a, a)
 --           mainLoop vty pic
 
-
 main :: IO ()
 main = do
     config <- standardIOConfig
     vty <- mkVty config
     runMaybeT $ do
         result <- MaybeT $ T.parseFromFile parseContent "DB.todo"
-        let pic = picForImage $ renderState (head result, result)
-        lift $ mainLoop vty pic
+        let initialState = (result, [])
+        lift $ mainLoop vty initialState
     return ()
 
-
-mainLoop :: Vty -> Picture -> IO ()
-mainLoop vty pic = do
-    update vty pic
+mainLoop :: Vty -> AppState -> IO ()
+mainLoop vty state = do
+    update vty renderedState
     e <- nextEvent vty
     case checkEvent e of
       Close -> shutdown vty
-      _     -> mainLoop vty pic
+      Up    -> mainLoop vty $ backward state
+      Down  -> mainLoop vty $ forward state
+      Set   -> mainLoop vty $ changeSelectedState state
+      _     -> mainLoop vty state
+    where
+        renderedState = picForImage $ renderState state
 
 data Action = Close
             | Down
@@ -63,9 +77,23 @@ checkEvent :: Event -> Action
 checkEvent (EvKey k [])
     = case k of
         KEsc      -> Close
+        KChar 's' -> Set
         KChar 'j' -> Down
         KChar 'k' -> Up
         KUp       -> Up
         KDown     -> Down
         _ -> None
 checkEvent _ = None
+
+-- List zipper definition
+-- snd -> Elements ABOVE current element
+-- fst -> Elements BELOW current element
+-- Selected element: head . fst
+-- Initial state ([1,2,3,4], [])
+type ListZipper a = ([a], [a])
+
+forward :: ListZipper a -> ListZipper a
+forward ((x:xs),ys) = (xs, x:ys)
+
+backward :: ListZipper a -> ListZipper a
+backward (xs, (y:ys)) = (y:xs, ys)

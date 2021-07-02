@@ -12,7 +12,15 @@ instance Show Status where
     show Done = "[X]"
     show _    = "[ ]"
 
-type Item = (Status, String)
+data Item = Item Status String
+    deriving (Eq)
+
+instance Show Item where
+    show (Item status body) = show status ++ " " ++ show body
+
+switchState :: Item -> Item
+switchState (Item Done body) = Item Todo body
+switchState (Item Todo body) = Item Done body
 
 parseStatus :: Parser Status
 parseStatus = (string "TODO" >> return Todo)
@@ -35,7 +43,7 @@ parseItem = do
     _ <- char ':'
     spaces
     body <- parseBody
-    return (status, body)
+    return $ Item status body
 
 parseContent :: Parser [Item]
 parseContent = many parseItem
