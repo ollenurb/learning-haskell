@@ -1,4 +1,4 @@
-module From70to73 where 
+module From70to73 where
 
 data Tree a = Node a [Tree a]
             deriving (Eq, Show)
@@ -17,6 +17,6 @@ tree5 = Node 'a' [
                 Node 'b' [Node 'd' [], Node 'e' []]
                 ]
 
-nnodes :: Tree a -> Int 
-nnodes (Node _ cs) = 1 + (sum $ map nnodes cs)
+nnodes :: Tree a -> Int
+nnodes (Node _ cs) = 1 + sum $ map nnodes cs
 

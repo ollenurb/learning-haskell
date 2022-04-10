@@ -2,6 +2,7 @@
 
 module Main where
 
+
 import Parser
 import qualified Text.Trifecta as T
 import Graphics.Vty
@@ -20,18 +21,18 @@ instance Show RenderizableItem where
 -- TODO: Clean this up
 renderState :: AppState -> Image
 renderState (selected:below, above)
-  = foldr (<->) emptyImage $ ((reverse . toImages) above) ++ (selectedImage:(toImages below))
+  = foldr (<->) emptyImage $ (reverse . toImages above) ++ (selectedImage:toImages below)
       where
           toImages = map (string defAttr . show . RI)
           selectedImage = string selectedAttr (show $ RI selected)
-          selectedAttr = (defAttr `withBackColor` white `withForeColor` black)
+          selectedAttr = defAttr `withBackColor` white `withForeColor` black
 
 changeSelectedState :: AppState -> AppState
-changeSelectedState (selected:below, above) = ((switchState selected):below, above)
+changeSelectedState (selected:below, above) = (switchState selected:below, above)
 
 saveChanges :: AppState -> String -> IO ()
 saveChanges state path = do
-    let items = uncurry (++) $ state
+    let items = uncurry (++) state
     writeFile path $ unlines . map show $ items
 
 -- Main version without monad transformers.
@@ -100,7 +101,7 @@ checkEvent _ = None
 type ListZipper a = ([a], [a])
 
 forward :: ListZipper a -> ListZipper a
-forward ((x:xs),ys) = (xs, x:ys)
+forward (x:xs,ys) = (xs, x:ys)
 
 backward :: ListZipper a -> ListZipper a
-backward (xs, (y:ys)) = (y:xs, ys)
+backward (xs, y:ys) = (y:xs, ys)

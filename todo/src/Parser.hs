@@ -28,7 +28,7 @@ parseStatus = (string "TODO" >> return Todo)
 
 -- Parse end of line and discard the result
 eol :: Parser ()
-eol = newline >> return ()
+eol = newline
 
 -- Take everything until either eol or eof
 parseBody :: Parser String
@@ -42,8 +42,7 @@ parseItem = do
     status <- parseStatus
     _ <- char ':'
     spaces
-    body <- parseBody
-    return $ Item status body
+    Item status <$> parseBody
 
 parseContent :: Parser [Item]
 parseContent = many parseItem

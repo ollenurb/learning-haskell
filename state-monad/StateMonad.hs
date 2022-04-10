@@ -1,5 +1,7 @@
+-- Implement a basic finite state automata using the state monad to
+-- declutter boilerplate code, taken from the official wiki example
+
 import Control.Monad
--- Implement a basic finite state automata 
 
 data TurnstileState = Locked | Unlocked
     deriving (Eq, Show)
@@ -11,24 +13,24 @@ coin :: TurnstileState -> (TurnstileOutput, TurnstileState)
 coin _ = (Thank, Unlocked)
 
 push :: TurnstileState -> (TurnstileOutput, TurnstileState)
-push Locked   = (Tut, Locked) 
-push Unlocked = (Open, Locked) 
+push Locked   = (Tut, Locked)
+push Unlocked = (Open, Locked)
 
-regularPerson :: TurnstileState -> ([TurnstileOutput], TurnstileState) 
+regularPerson :: TurnstileState -> ([TurnstileOutput], TurnstileState)
 regularPerson s0 =
-    let (r1, s1) = coin s0 
+    let (r1, s1) = coin s0
         (r2, s2) = push s1
     in ([r1, r2], s2)
 
-distractedPerson :: TurnstileState -> ([TurnstileOutput], TurnstileState) 
-distractedPerson s0 = 
+distractedPerson :: TurnstileState -> ([TurnstileOutput], TurnstileState)
+distractedPerson s0 =
     let (r1, s1) = coin s0
     in ([r1], s1)
 
 hastyPerson :: TurnstileState -> ([TurnstileOutput], TurnstileState)
-hastyPerson s0 = 
+hastyPerson s0 =
     let (r1, s1) = push s0
-    in case r1 of 
+    in case r1 of
         Open -> ([r1], s1)
         Tut  -> regularPerson s1
 
@@ -68,5 +70,3 @@ instance Monad (State s) where
 coinS, pushS :: State TurnstileState TurnstileOutput
 coinS = state coin
 pushS = state push
-
-

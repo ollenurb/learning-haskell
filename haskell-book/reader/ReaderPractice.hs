@@ -41,7 +41,6 @@ bolt = pure (&&) <*> (>3) <*> (<8)
 
 main :: IO ()
 main = do
-
     print $ sequenceA [Just 3, Just 2, Just 1]
     print $ sequenceA [x, y]
     print $ sequenceA [xs, ys]
