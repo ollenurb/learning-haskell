@@ -6,7 +6,6 @@ module From21to28 where
 import System.Random
 import Data.List
 
-
 -- 21. Insert an element at a given position into a list.
 insertAt :: a -> [a] -> Int -> [a]
 insertAt el xs n =
@@ -31,7 +30,6 @@ diffSelect :: Int -> Int -> IO [Int]
 diffSelect n m = do stdGen <- getStdGen
                     let set = (nub . randomRs (1, m)) stdGen
                     return $ take n set
-
 
 -- 25. Generate a random permutation of the elements of a list.
 rndPermu :: [a] -> IO [a]

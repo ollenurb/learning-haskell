@@ -5,7 +5,7 @@ type Matrix = [Row]
 
 triangularize :: Matrix -> Matrix
 triangularize []     = []
-triangularize (x:xs) = x:(triangularize reduced)
+triangularize (x:xs) = x:triangularize reduced
     where reduced = map (reduceRow x) xs
 
 reduceRow :: Row -> Row -> Row

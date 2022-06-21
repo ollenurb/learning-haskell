@@ -1,8 +1,10 @@
+{- A simple SECD machine that evaluates untyped lambda expressions -}
 module Main where
 
--- Lambda expressions must be represented using DeBrujin's notation In this
--- Integers are represented using machine-encoded integers for performance
--- reasons.
+
+-- Lambda expressions must be represented using DeBrujin's notation.
+-- In this notation, Integers are represented using machine-encoded
+-- integers for (obvious) performance reasons.
 data LExpr = LApp LExpr LExpr
           | LVar Int
           | LAbs LExpr

@@ -1,15 +1,9 @@
 name:                todo
 version:             0.1.0.0
-homepage:            https://github.com/githubuser/todo#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2021 Author name here
-category:            Web
+author:              Ollenurb
+maintainer:          brunello.mtt@gmail.com
 build-type:          Simple
-cabal-version:       >=1.10
-extra-source-files:  README.md
+cabal-version:       2.4
 
 executable todo
   hs-source-dirs:      src
