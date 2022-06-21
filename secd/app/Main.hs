@@ -35,7 +35,7 @@ add2 = LAbs (LPlus (LVar 0) (LConst 1))
 
 compile :: LExpr -> Code
 compile (LConst k)  = [IConst k]
-compile (LAbs a)    = [IClo $ (compile a) ++ [IRet]]
+compile (LAbs a)    = [IClo $ compile a ++ [IRet]]
 compile (LApp m n)  = compile n ++ compile m ++ [IApp]
 compile (LVar i)    = [IAcc i]
 compile (LPlus a b) = compile b ++ compile a ++ [IAdd]
